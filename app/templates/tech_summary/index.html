@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<div class="container">
+    <div class="page-header">
+        <h1>技术总结
+            <small>分享技术经验和知识积累</small>
+            <a href="{{ url_for('tech_summary.create') }}" class="btn btn-primary pull-right">添加总结</a>
+        </h1>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            {% if summaries.items %}
+                {% for summary in summaries.items %}
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            <a href="{{ url_for('tech_summary.show', id=summary.id) }}">{{ summary.title }}</a>
+                            <span class="label label-info pull-right">{{ summary.tags }}</span>
+                        </h3>
+                    </div>
+                    <div class="panel-body">
+                        <p>{{ summary.content[:200] }}{% if summary.content|length > 200 %}...{% endif %}</p>
+                        <div class="summary-meta">
+                            <small>
+                                发布者: {{ summary.author.username }} |
+                                创建时间: {{ summary.created_at.strftime('%Y-%m-%d %H:%M') }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        {% if summaries.has_prev %}
+                        <li>
+                            <a href="{{ url_for('tech_summary.index', page=summaries.prev_num) }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for page in summaries.iter_pages() %}
+                            {% if page %}
+                                <li {% if page == summaries.page %}class="active"{% endif %}>
+                                    <a href="{{ url_for('tech_summary.index', page=page) }}">{{ page }}</a>
+                                </li>
+                            {% else %}
+                                <li class="disabled"><span>...</span></li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if summaries.has_next %}
+                        <li>
+                            <a href="{{ url_for('tech_summary.index', page=summaries.next_num) }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% else %}
+                <div class="alert alert-info">
+                    暂无技术总结记录，<a href="{{ url_for('tech_summary.create') }}">立即添加</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

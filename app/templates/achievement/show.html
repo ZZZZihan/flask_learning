@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .achievement-header {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+    
+    .achievement-title {
+        margin: 0;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .achievement-meta {
+        margin-top: 15px;
+        color: #666;
+    }
+    
+    .meta-item {
+        margin-right: 20px;
+        display: inline-block;
+    }
+    
+    .achievement-content {
+        background-color: #fff;
+        padding: 30px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .content-section {
+        margin-bottom: 20px;
+    }
+    
+    .content-section h4 {
+        color: #333;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .keyword-tag {
+        display: inline-block;
+        background-color: #e9ecef;
+        padding: 5px 10px;
+        margin: 0 5px 5px 0;
+        border-radius: 15px;
+        font-size: 0.9em;
+        color: #495057;
+    }
+    
+    .file-attachment {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        margin-top: 20px;
+    }
+    
+    .action-buttons {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+</style>
+{% endblock %}
+
+{% block app_content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+            <!-- 成果标题和元信息 -->
+            <div class="achievement-header">
+                <h2 class="achievement-title">
+                    {{ achievement.title }}
+                    <span class="label label-primary pull-right">{{ achievement.category }}</span>
+                </h2>
+                <div class="achievement-meta">
+                    <span class="meta-item">
+                        <i class="glyphicon glyphicon-user"></i>
+                        发布者: {{ achievement.author.username }}
+                    </span>
+                    <span class="meta-item">
+                        <i class="glyphicon glyphicon-calendar"></i>
+                        发布时间: {{ achievement.publish_date.strftime('%Y-%m-%d') }}
+                    </span>
+                    <span class="meta-item">
+                        <i class="glyphicon glyphicon-eye-open"></i>
+                        浏览: {{ achievement.view_count }} 次
+                    </span>
+                    <span class="meta-item">
+                        <i class="glyphicon glyphicon-time"></i>
+                        创建于: {{ achievement.created_at.strftime('%Y-%m-%d %H:%M') }}
+                    </span>
+                    {% if achievement.updated_at != achievement.created_at %}
+                    <span class="meta-item">
+                        <i class="glyphicon glyphicon-edit"></i>
+                        更新于: {{ achievement.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 成果内容 -->
+            <div class="achievement-content">
+                {% if achievement.abstract %}
+                <div class="content-section">
+                    <h4>摘要</h4>
+                    <p class="text-muted">{{ achievement.abstract }}</p>
+                </div>
+                {% endif %}
+
+                <div class="content-section">
+                    <h4>详细内容</h4>
+                    <div class="content-text">
+                        {{ achievement.content | nl2br }}
+                    </div>
+                </div>
+
+                {% if achievement.keywords %}
+                <div class="content-section">
+                    <h4>关键词</h4>
+                    <div class="keywords">
+                        {% for keyword in achievement.keywords.split(',') %}
+                        <span class="keyword-tag">{{ keyword.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if achievement.file_url %}
+                <div class="file-attachment">
+                    <h4>
+                        <i class="glyphicon glyphicon-paperclip"></i>
+                        附件
+                    </h4>
+                    <p>
+                        <a href="{{ url_for('achievement.download_file', filename=achievement.file_url) }}" 
+                           class="btn btn-info btn-sm">
+                            <i class="glyphicon glyphicon-download-alt"></i>
+                            下载文件
+                        </a>
+                        <span class="text-muted">{{ achievement.file_url }}</span>
+                    </p>
+                </div>
+                {% endif %}
+
+                {% if current_user == achievement.author %}
+                <div class="action-buttons">
+                    <a href="{{ url_for('achievement.edit', id=achievement.id) }}" class="btn btn-primary">
+                        <i class="glyphicon glyphicon-edit"></i> 编辑
+                    </a>
+                    <form action="{{ url_for('achievement.delete', id=achievement.id) }}" method="POST" style="display: inline;">
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('确定要删除这个成果吗？')">
+                            <i class="glyphicon glyphicon-trash"></i> 删除
+                        </button>
+                    </form>
+                    <a href="{{ url_for('achievement.index') }}" class="btn btn-default pull-right">
+                        <i class="glyphicon glyphicon-arrow-left"></i> 返回列表
+                    </a>
+                </div>
+                {% else %}
+                <div class="action-buttons text-center">
+                    <a href="{{ url_for('achievement.index') }}" class="btn btn-default">
+                        <i class="glyphicon glyphicon-arrow-left"></i> 返回列表
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

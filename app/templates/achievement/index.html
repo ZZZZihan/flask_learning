@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .achievement-card {
+        transition: transform 0.2s;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .achievement-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .achievement-stats {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+    }
+    
+    .search-box {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 5px;
+        margin-bottom: 30px;
+    }
+    
+    .category-badge {
+        font-size: 0.9em;
+        padding: 5px 10px;
+    }
+    
+    .meta-info {
+        color: #6c757d;
+        font-size: 0.9em;
+    }
+    
+    .filter-section {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    .btn-filter {
+        margin-top: 5px;
+    }
+    
+    .achievement-content {
+        margin: 15px 0;
+    }
+    
+    .achievement-footer {
+        border-top: 1px solid #eee;
+        padding-top: 10px;
+        margin-top: 10px;
+    }
+    
+    .stats-badge {
+        background-color: #f8f9fa;
+        padding: 3px 8px;
+        border-radius: 3px;
+        margin-right: 10px;
+        font-size: 0.85em;
+    }
+    
+    /* 添加网格视图相关样式 */
+    .view-switcher {
+        margin-bottom: 20px;
+    }
+    
+    .grid-view .achievement-card {
+        height: 400px;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .grid-view .achievement-card .panel-heading {
+        height: 80px;
+        overflow: hidden;
+    }
+    
+    .grid-view .achievement-card .panel-body {
+        height: 320px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .grid-view .achievement-content {
+        height: 150px;
+        overflow: hidden;
+    }
+    
+    .category-label {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 3px;
+        color: white;
+    }
+    
+    .category-论文 { background-color: #007bff; }
+    .category-专利 { background-color: #28a745; }
+    .category-项目 { background-color: #dc3545; }
+    .category-获奖 { background-color: #ffc107; color: #333; }
+    .category-软件著作权 { background-color: #17a2b8; }
+    .category-其他 { background-color: #6c757d; }
+    
+    .quick-preview {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 15px;
+        background: linear-gradient(transparent, rgba(255,255,255,0.9) 20%, white);
+    }
+    
+    .view-switcher .btn {
+        margin-left: 10px;
+    }
+    
+    .achievement-stats .stat-item {
+        padding: 15px;
+        border-radius: 5px;
+        background-color: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        transition: transform 0.2s;
+    }
+    
+    .achievement-stats .stat-item:hover {
+        transform: translateY(-5px);
+    }
+    
+    .stat-item .stat-icon {
+        font-size: 2em;
+        margin-bottom: 10px;
+        color: #007bff;
+    }
+    
+    .stat-item .stat-value {
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .stat-item .stat-label {
+        color: #666;
+        font-size: 0.9em;
+    }
+</style>
+{% endblock %}
+
+{% block app_content %}
+<div class="container">
+    <!-- 统计信息 -->
+    <div class="achievement-stats">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-item text-center">
+                    <div class="stat-icon">
+                        <i class="glyphicon glyphicon-book"></i>
+                    </div>
+                    <div class="stat-value">{{ achievements.total }}</div>
+                    <div class="stat-label">总成果数</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item text-center">
+                    <div class="stat-icon">
+                        <i class="glyphicon glyphicon-plus"></i>
+                    </div>
+                    <div class="stat-value">{{ monthly_count }}</div>
+                    <div class="stat-label">本月新增</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item text-center">
+                    <div class="stat-icon">
+                        <i class="glyphicon glyphicon-eye-open"></i>
+                    </div>
+                    <div class="stat-value">{{ total_views }}</div>
+                    <div class="stat-label">总浏览量</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item text-center">
+                    <div class="stat-icon">
+                        <i class="glyphicon glyphicon-file"></i>
+                    </div>
+                    <div class="stat-value">{{ file_count }}</div>
+                    <div class="stat-label">文件数量</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 搜索和筛选区域 -->
+    <div class="search-box">
+        <form class="form-horizontal" method="GET" action="{{ url_for('achievement.index') }}">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="control-label">关键词搜索</label>
+                        <input type="text" class="form-control" name="q" placeholder="标题、内容、关键词..." value="{{ search_query }}">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="control-label">成果类别</label>
+                        <select class="form-control" name="category">
+                            <option value="">全部类别</option>
+                            {% for category in categories %}
+                            <option value="{{ category }}" {% if category == current_category %}selected{% endif %}>
+                                {{ category }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="control-label">排序方式</label>
+                        <select class="form-control" name="sort">
+                            <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>最新发布</option>
+                            <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>最早发布</option>
+                            <option value="views" {% if sort_by == 'views' %}selected{% endif %}>最多浏览</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label class="control-label">&nbsp;</label>
+                        <div>
+                            <button type="submit" class="btn btn-primary btn-block">
+                                <i class="glyphicon glyphicon-search"></i> 搜索
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- 成果列表 -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="clearfix">
+                <div class="pull-left">
+                    <h3 style="margin-top: 5px;">成果列表</h3>
+                </div>
+                <div class="pull-right">
+                    <div class="btn-group view-switcher">
+                        <button type="button" class="btn btn-default" onclick="switchView('list')" id="listViewBtn">
+                            <i class="glyphicon glyphicon-th-list"></i> 列表视图
+                        </button>
+                        <button type="button" class="btn btn-default" onclick="switchView('grid')" id="gridViewBtn">
+                            <i class="glyphicon glyphicon-th"></i> 网格视图
+                        </button>
+                    </div>
+                    <a href="{{ url_for('achievement.create') }}" class="btn btn-success">
+                        <i class="glyphicon glyphicon-plus"></i> 添加成果
+                    </a>
+                </div>
+            </div>
+            <hr>
+            
+            {% if achievements.items %}
+            <div id="achievementList" class="row list-view">
+                {% for achievement in achievements.items %}
+                <div class="{% if view_mode == 'grid' %}col-md-4{% else %}col-md-12{% endif %}">
+                    <div class="panel panel-default achievement-card">
+                        <div class="panel-heading">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h3 class="panel-title">
+                                        <a href="{{ url_for('achievement.show', id=achievement.id) }}">{{ achievement.title }}</a>
+                                    </h3>
+                                </div>
+                                <div class="col-md-4 text-right">
+                                    <span class="category-label category-{{ achievement.category }}">
+                                        {{ achievement.category }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            {% if achievement.abstract %}
+                                <div class="achievement-content">
+                                    <p class="text-muted">{{ achievement.abstract }}</p>
+                                </div>
+                            {% else %}
+                                <div class="achievement-content">
+                                    <p>{{ achievement.content[:200] }}{% if achievement.content|length > 200 %}...{% endif %}</p>
+                                </div>
+                            {% endif %}
+                            
+                            {% if achievement.keywords %}
+                                <div class="keywords">
+                                    {% for keyword in achievement.keywords.split(',') %}
+                                        <span class="label label-info">{{ keyword.strip() }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            
+                            <div class="achievement-footer">
+                                <span class="stats-badge">
+                                    <i class="glyphicon glyphicon-user"></i> {{ achievement.author.username }}
+                                </span>
+                                <span class="stats-badge">
+                                    <i class="glyphicon glyphicon-calendar"></i> {{ achievement.publish_date.strftime('%Y-%m-%d') }}
+                                </span>
+                                <span class="stats-badge">
+                                    <i class="glyphicon glyphicon-eye-open"></i> {{ achievement.view_count }} 次浏览
+                                </span>
+                                {% if achievement.file_url %}
+                                <span class="stats-badge">
+                                    <i class="glyphicon glyphicon-paperclip"></i>
+                                    <a href="{{ url_for('achievement.download_file', filename=achievement.file_url) }}" target="_blank">
+                                        下载附件
+                                    </a>
+                                </span>
+                                {% endif %}
+                            </div>
+                            
+                            {% if view_mode == 'grid' %}
+                            <div class="quick-preview">
+                                <a href="{{ url_for('achievement.show', id=achievement.id) }}" class="btn btn-primary btn-block">
+                                    查看详情
+                                </a>
+                            </div>
+                            {% else %}
+                            <div class="text-right" style="margin-top: 10px;">
+                                <a href="{{ url_for('achievement.show', id=achievement.id) }}" class="btn btn-primary btn-sm">
+                                    查看详情
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- 分页 -->
+            <nav aria-label="Page navigation" class="text-center">
+                <ul class="pagination">
+                    {% if achievements.has_prev %}
+                    <li>
+                        <a href="{{ url_for('achievement.index', page=achievements.prev_num, category=current_category, q=search_query, sort=sort_by) }}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page in achievements.iter_pages() %}
+                        {% if page %}
+                            <li {% if page == achievements.page %}class="active"{% endif %}>
+                                <a href="{{ url_for('achievement.index', page=page, category=current_category, q=search_query, sort=sort_by) }}">{{ page }}</a>
+                            </li>
+                        {% else %}
+                            <li class="disabled"><span>...</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if achievements.has_next %}
+                    <li>
+                        <a href="{{ url_for('achievement.index', page=achievements.next_num, category=current_category, q=search_query, sort=sort_by) }}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="glyphicon glyphicon-info-sign"></i> 暂无成果记录，
+                    <a href="{{ url_for('achievement.create') }}">立即添加</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+{{ super() }}
+<script>
+function switchView(mode) {
+    const container = document.getElementById('achievementList');
+    const listBtn = document.getElementById('listViewBtn');
+    const gridBtn = document.getElementById('gridViewBtn');
+    
+    if (mode === 'grid') {
+        container.classList.remove('list-view');
+        container.classList.add('grid-view');
+        listBtn.classList.remove('active');
+        gridBtn.classList.add('active');
+        
+        // 调整卡片布局
+        const cards = container.getElementsByClassName('col-md-12');
+        Array.from(cards).forEach(card => {
+            card.className = 'col-md-4';
+        });
+    } else {
+        container.classList.remove('grid-view');
+        container.classList.add('list-view');
+        gridBtn.classList.remove('active');
+        listBtn.classList.add('active');
+        
+        // 调整卡片布局
+        const cards = container.getElementsByClassName('col-md-4');
+        Array.from(cards).forEach(card => {
+            card.className = 'col-md-12';
+        });
+    }
+    
+    // 保存视图偏好到 localStorage
+    localStorage.setItem('achievementViewMode', mode);
+}
+
+// 页面加载时恢复上次的视图模式
+document.addEventListener('DOMContentLoaded', function() {
+    const savedMode = localStorage.getItem('achievementViewMode');
+    if (savedMode) {
+        switchView(savedMode);
+    }
+});
+</script>
+{% endblock %}
+{% endblock %} 

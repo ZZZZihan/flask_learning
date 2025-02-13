@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        {{ summary.title }}
+                        <span class="label label-info pull-right">{{ summary.tags }}</span>
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    <div class="summary-meta">
+                        <p>
+                            <small>
+                                发布者: {{ summary.author.username }} |
+                                创建时间: {{ summary.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                {% if summary.updated_at != summary.created_at %}
+                                | 更新于: {{ summary.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                                {% endif %}
+                            </small>
+                        </p>
+                    </div>
+                    
+                    <div class="summary-content">
+                        {{ summary.content | nl2br }}
+                    </div>
+                </div>
+                
+                {% if current_user == summary.author %}
+                <div class="panel-footer">
+                    <a href="{{ url_for('tech_summary.edit', id=summary.id) }}" class="btn btn-primary">编辑</a>
+                    <form action="{{ url_for('tech_summary.delete', id=summary.id) }}" method="POST" style="display: inline;">
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('确定要删除这个技术总结吗？')">删除</button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="text-center">
+                <a href="{{ url_for('tech_summary.index') }}" class="btn btn-default">返回列表</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

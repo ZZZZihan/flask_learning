@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">添加成果</h3>
+                </div>
+                <div class="panel-body">
+                    <form method="POST" action="{{ url_for('achievement.create') }}" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="title">标题</label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="abstract">摘要</label>
+                            <textarea class="form-control" id="abstract" name="abstract" rows="3"></textarea>
+                            <p class="help-block">简要描述成果的主要内容</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="category">类别</label>
+                            <select class="form-control" id="category" name="category" required>
+                                {% for category in categories %}
+                                <option value="{{ category }}">{{ category }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="keywords">关键词</label>
+                            <input type="text" class="form-control" id="keywords" name="keywords">
+                            <p class="help-block">用逗号分隔多个关键词</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="publish_date">发布日期</label>
+                            <input type="date" class="form-control" id="publish_date" name="publish_date" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="content">详细内容</label>
+                            <textarea class="form-control" id="content" name="content" rows="10" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="file">附件</label>
+                            <input type="file" id="file" name="file">
+                            <p class="help-block">支持的文件类型：PDF、Word、PPT、图片等</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">提交</button>
+                            <a href="{{ url_for('achievement.index') }}" class="btn btn-default">返回</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 添加一些自定义样式 -->
+{% block styles %}
+{{ super() }}
+<style>
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .help-block {
+        color: #666;
+        font-size: 0.9em;
+        margin-top: 5px;
+    }
+</style>
+{% endblock %}
+{% endblock %} 

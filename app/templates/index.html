@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<div class="jumbotron">
+    <h1>欢迎来到实验室知识管理系统</h1>
+    <p>这是一个用于管理实验室知识资产的综合平台</p>
+    {% if not current_user.is_authenticated %}
+    <p>
+        <a class="btn btn-primary btn-lg" href="{{ url_for('auth.login') }}" role="button">登录</a>
+        <a class="btn btn-success btn-lg" href="{{ url_for('auth.register') }}" role="button">注册</a>
+    </p>
+    {% endif %}
+</div>
+
+{% if current_user.is_authenticated %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">成果展示</h3>
+            </div>
+            <div class="panel-body">
+                查看和管理实验室的科研成果
+                <hr>
+                <a href="{{ url_for('achievement.index') }}" class="btn btn-primary">进入</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="panel panel-success">
+            <div class="panel-heading">
+                <h3 class="panel-title">技术总结</h3>
+            </div>
+            <div class="panel-body">
+                分享技术经验和知识积累
+                <hr>
+                <a href="#" class="btn btn-success">进入</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">项目管理</h3>
+            </div>
+            <div class="panel-body">
+                跟踪和管理实验室项目进度
+                <hr>
+                <a href="#" class="btn btn-info">进入</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %} 
